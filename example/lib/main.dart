@@ -1,10 +1,34 @@
 import 'package:arch/ioc.dart';
 import 'package:arch/mvvm.dart';
 import 'package:arch/services.dart';
-import 'package:arch_example/app_initializer.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp(AppInitializer()));
+
+class AppInitializer implements Initializer {
+  @override
+  void registerTypes(ServiceRegistry registry) {
+    registry
+      ..registerForNavigation(
+        view: () => HomeView(),
+        viewModel: () => HomeViewModel(registry.resolve<NavigationService>()),
+        viewName: 'HomeView',
+      )
+      ..registerForNavigation(
+        view: () => SecondView(),
+        viewModel: () => SecondViewModel(
+          registry.resolve<NavigationService>(), // NavigationService and DialogService are automatically registered
+          registry.resolve<DialogService>(),
+        ),
+        // This will default to the view's type name `SecondView`.
+      );
+  }
+}
+
+class ParameterNames {
+  static const messageFromHome = 'messageFromHome';
+  static const messageFromSecond = 'messageFromSecond';
+}
 
 class MyApp extends Application {
   MyApp(Initializer initializer) : super(initializer);
@@ -14,127 +38,110 @@ class MyApp extends Application {
     print('Initialized');
   }
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      navigatorKey: NavigationService.navigatorKey,
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Arch Demo',
+      navigatorKey: NavigationService.navigatorKey, // IMPORTANT
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: HomeView(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class HomeView extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomeViewState createState() => _HomeViewState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeViewState extends ViewStateBase<HomeView, HomeViewModel> {
   @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+  Widget buildView(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(title: Text(viewModel.title)),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
+            Text('You have pushed the button this many times: ${viewModel.counter}'),
+            RaisedButton(
+              child: Text('Go to Second View'),
+              onPressed: viewModel.navigate,
+            )
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final navigationService = Application.serviceLocator.resolve<NavigationService>();
-          final result = await navigationService.push('SecondPage', {'message': 'Hello'});
-          if (result != null) print(result['message']);
-        },
+        onPressed: () => viewModel.counter++,
         tooltip: 'Increment',
         child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
 
-class SecondPage extends ViewBase<SecondViewModel> {
-  const SecondPage({Key key}) : super(key: key);
+class HomeViewModel extends ViewModelBase {
+  HomeViewModel(NavigationService navigationService) : super(navigationService: navigationService);
+
+  String title = 'Flutter Demo Home View';
+
+  int _counter = 0;
+  int get counter => _counter;
+  set counter(int value) {
+    if (_counter != value) {
+      _counter = value;
+      notifyListeners('counter');
+    }
+  }
+
+  Future<void> navigate() async {
+    final result = await navigationService.push('SecondView', {ParameterNames.messageFromHome: 'Hello'});
+    if (result?.containsKey(ParameterNames.messageFromSecond) == true) {
+      print(result[ParameterNames.messageFromSecond]);
+    }
+  }
+}
+
+class SecondView extends ViewBase<SecondViewModel> {
+  SecondView({Key key}) : super(key: key);
 
   @override
   Widget buildView(BuildContext context, SecondViewModel viewModel) {
-    print(this.hashCode);
     return Scaffold(
       appBar: AppBar(title: Text(viewModel.title)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: viewModel.goTo,
-        tooltip: 'Increment',
-        child: Icon(Icons.gps_off),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+              child: Text('Go Back'),
+              onPressed: viewModel.goBack,
+            ),
+            RaisedButton(
+              child: Text('Show Alert'),
+              onPressed: viewModel.alert,
+            ),
+          ],
+        ),
       ), //
     );
   }
 }
 
 class SecondViewModel extends ViewModelBase {
-  SecondViewModel(NavigationService navigationService) : super(navigationService: navigationService);
+  SecondViewModel(NavigationService navigationService, DialogService dialogService)
+      : super(navigationService: navigationService, dialogService: dialogService);
 
-  String title = 'Second Page';
+  final title = 'Second View';
 
   @override
   Future<void> init([Map<String, Object> parameters]) async {
-    print(parameters['message']);
+    if (parameters?.containsKey(ParameterNames.messageFromHome) == true) {
+      print(parameters[ParameterNames.messageFromHome]);
+    }
   }
 
-  void goTo() => navigationService.pop({'message': 'Hi!'});
+  void goBack() => navigationService.pop({ParameterNames.messageFromSecond: 'Hi!'});
+
+  void alert() => dialogService.alert('This is an alert dialog');
 }

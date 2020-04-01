@@ -1,3 +1,6 @@
+#### 0.0.1+5
+- Added `ChangeNotifierBuilder`.
+
 #### 0.0.1+4
 - Fixed `ViewStateBase` and `AutomaticKeepAliveViewStateBase` view model resolution.
 

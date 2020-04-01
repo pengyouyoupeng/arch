@@ -2,7 +2,7 @@ name: arch
 
 description: MVVM architecture components for Flutter.
 
-homepage: https://www.github.com/cross-solutions/arch
+homepage: https://cross-solutions.github.io/arch/
 
 repository: https://www.github.com/cross-solutions/arch
 
@@ -10,7 +10,7 @@ issue_tracker: https://www.github.com/cross-solutions/arch/issues
 
 documentation: https://pub.dev/documentation/arch/latest/
 
-version: 0.0.1+4
+version: 0.0.1+5
 
 environment:
   sdk: ">=2.6.0 <3.0.0"
