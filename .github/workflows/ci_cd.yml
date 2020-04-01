@@ -5,10 +5,8 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-  
+  publishing:
     runs-on: [linux]
-    
     steps:
     - name: 'Checkout'
       uses: actions/checkout@v2
