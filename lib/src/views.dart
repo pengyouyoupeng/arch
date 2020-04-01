@@ -103,7 +103,11 @@ abstract class ViewStateBase<TWidget extends StatefulWidget, TViewModel extends 
   @override
   void initState() {
     super.initState();
-    _viewModel = Application.serviceLocator.resolve<TViewModel>();
+    if (Application.serviceLocator.canResolve<TViewModel>()) {
+      _viewModel = Application.serviceLocator.resolve<TViewModel>();
+    }
+
+    throw Error.safeToString('Cannot find view model $TViewModel for $TWidget\'s. Did you registered it?');
   }
 
   /// Called after initializing the view model.
@@ -118,7 +122,7 @@ abstract class ViewStateBase<TWidget extends StatefulWidget, TViewModel extends 
   @mustCallSuper
   @override
   void dispose() {
-    viewModel?.dispose();
+    viewModel.dispose();
     super.dispose();
   }
 
@@ -127,15 +131,68 @@ abstract class ViewStateBase<TWidget extends StatefulWidget, TViewModel extends 
   Widget build(BuildContext context) {
     return ListenableProvider<TViewModel>(
       create: (_) {
-        if (Application.serviceLocator.canResolve<TViewModel>()) {
-          final viewModel = Application.serviceLocator.resolve<TViewModel>();
-          final parameters = ModalRoute.of(context)?.settings?.arguments as Map<String, Object>;
-          viewModel.init(parameters);
-          didInitViewModel();
-          return viewModel;
-        }
+        final parameters = ModalRoute.of(context)?.settings?.arguments as Map<String, Object>;
+        viewModel.init(parameters);
+        didInitViewModel();
+        return viewModel;
+      },
+      child: Consumer<TViewModel>(builder: (context, _, __) => buildView(context)),
+    );
+  }
+}
 
-        throw Error.safeToString('Cannot find view model $TViewModel for $TWidget\'s. Did you registered it?');
+/// A view's state that has a view model, mixed with [AutomaticKeepAliveClientMixin].
+abstract class AutomaticKeepAliveViewStateBase<TWidget extends StatefulWidget, TViewModel extends ViewModelBase>
+    extends State<TWidget> with AutomaticKeepAliveClientMixin {
+  TViewModel _viewModel;
+  TViewModel get viewModel => _viewModel;
+
+  /// Describes the UI to be presented by this state.
+  ///
+  /// Called whenever the view model changes.
+  Widget buildView(BuildContext context);
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @mustCallSuper
+  @override
+  void initState() {
+    super.initState();
+    if (Application.serviceLocator.canResolve<TViewModel>()) {
+      _viewModel = Application.serviceLocator.resolve<TViewModel>();
+    }
+
+    throw Error.safeToString('Cannot find view model $TViewModel for $TWidget\'s. Did you registered it?');
+  }
+
+  /// Called after initializing the view model.
+  ///
+  /// Set objects here that depend on the view model after it was initialized.
+  void didInitViewModel() {}
+
+  /// Free resources in this object before removing it from the widget tree.
+  ///
+  /// If you override this, make sure to end your method with a call to super.dispose(),
+  /// because this will dispose the view model after all disposal in this state is finished.
+  @mustCallSuper
+  @override
+  void dispose() {
+    viewModel.dispose();
+    super.dispose();
+  }
+
+  @nonVirtual
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return ListenableProvider<TViewModel>(
+      create: (_) {
+        final parameters = ModalRoute.of(context)?.settings?.arguments as Map<String, Object>;
+        viewModel.init(parameters);
+        didInitViewModel();
+        return viewModel;
       },
       child: Consumer<TViewModel>(builder: (context, _, __) => buildView(context)),
     );
