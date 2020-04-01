@@ -105,9 +105,9 @@ abstract class ViewStateBase<TWidget extends StatefulWidget, TViewModel extends 
     super.initState();
     if (Application.serviceLocator.canResolve<TViewModel>()) {
       _viewModel = Application.serviceLocator.resolve<TViewModel>();
+    } else {
+      throw Error.safeToString('Cannot find view model $TViewModel for $TWidget\'s. Did you registered it?');
     }
-
-    throw Error.safeToString('Cannot find view model $TViewModel for $TWidget\'s. Did you registered it?');
   }
 
   /// Called after initializing the view model.
@@ -132,9 +132,9 @@ abstract class ViewStateBase<TWidget extends StatefulWidget, TViewModel extends 
     return ListenableProvider<TViewModel>(
       create: (_) {
         final parameters = ModalRoute.of(context)?.settings?.arguments as Map<String, Object>;
-        viewModel.init(parameters);
+        _viewModel.init(parameters);
         didInitViewModel();
-        return viewModel;
+        return _viewModel;
       },
       child: Consumer<TViewModel>(builder: (context, _, __) => buildView(context)),
     );
@@ -161,9 +161,9 @@ abstract class AutomaticKeepAliveViewStateBase<TWidget extends StatefulWidget, T
     super.initState();
     if (Application.serviceLocator.canResolve<TViewModel>()) {
       _viewModel = Application.serviceLocator.resolve<TViewModel>();
+    } else {
+      throw Error.safeToString('Cannot find view model $TViewModel for $TWidget\'s. Did you registered it?');
     }
-
-    throw Error.safeToString('Cannot find view model $TViewModel for $TWidget\'s. Did you registered it?');
   }
 
   /// Called after initializing the view model.
@@ -190,9 +190,9 @@ abstract class AutomaticKeepAliveViewStateBase<TWidget extends StatefulWidget, T
     return ListenableProvider<TViewModel>(
       create: (_) {
         final parameters = ModalRoute.of(context)?.settings?.arguments as Map<String, Object>;
-        viewModel.init(parameters);
+        _viewModel.init(parameters);
         didInitViewModel();
-        return viewModel;
+        return _viewModel;
       },
       child: Consumer<TViewModel>(builder: (context, _, __) => buildView(context)),
     );
