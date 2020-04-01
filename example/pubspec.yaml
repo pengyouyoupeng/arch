@@ -1,0 +1,16 @@
+name: arch_example
+
+version: 0.0.0+1
+
+environment:
+  sdk: ">=2.6.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  arch:
+    path: ../src
+
+flutter:
+  uses-material-design: true
