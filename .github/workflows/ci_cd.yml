@@ -6,7 +6,8 @@ on:
 
 jobs:
   build:
-    runs-on: [macos-latest]
+  
+    runs-on: [linux]
     
     steps:
     - name: 'Checkout'
