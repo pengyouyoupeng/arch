@@ -8,7 +8,7 @@ abstract class Application extends StatelessWidget {
   Application(Initializer initializer, {Key key})
       : assert(initializer != null),
         super(key: key) {
-    initializer.registerTypes(ServiceRegistryImpl()..registerInternalDependencies(serviceLocator));
+    initializer.registerTypes(ServiceRegistryImpl()..registerInternalDependencies());
     onInitialize();
   }
 

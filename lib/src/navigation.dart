@@ -2,6 +2,7 @@ import 'package:arch/src/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 
+/// A service for navigation.
 abstract class NavigationService {
   static final navigatorKey = GlobalKey<NavigatorState>();
 

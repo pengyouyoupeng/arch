@@ -1,11 +1,13 @@
 import 'package:arch/src/dialog.dart';
 import 'package:arch/src/navigation.dart';
-import 'package:arch/src/service_locator.dart';
+import 'package:arch/src/view.dart';
 import 'package:arch/src/view_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 
-abstract class ServiceRegistry {
+import 'service_locator.dart';
+
+abstract class ServiceRegistry implements ServiceLocator {
   /// Registers an instance of [T] and returns it whenever [T] is being resolved.
   void registerSingleton<T>(T instance, {String name});
 
@@ -24,24 +26,25 @@ abstract class ServiceRegistry {
   /// - [viewName] is optional. If `null`, uses [TView]'s name.
   void registerForNavigation<TView extends Widget, TViewModel extends ViewModelBase>({
     @required TView Function() view,
-    TViewModel Function() viewModel,
+    @required TViewModel Function() viewModel,
     String viewName,
   });
 
-  /// Resolves [T].
-  ///
-  /// If [T] is registered as a singleton, ensure that [T] is registered first before resolving it.
-  T resolve<T>([String name]);
+  /// Registers a dialog that can be shown using [DialogService.showCustomDialog]
+  void registerDialog<TDialog extends DialogBase, TDialogModel extends DialogModelBase>({
+    @required TDialog Function() dialog,
+    @required TDialogModel Function() dialogModel,
+    String dialogName,
+  });
 }
 
-class ServiceRegistryImpl implements ServiceRegistry {
-  static final _i = GetIt.I;
+class ServiceRegistryImpl extends ServiceLocatorImpl implements ServiceRegistry {
+  static final _i = GetIt.I..allowReassignment = true;
 
-  void registerInternalDependencies(ServiceLocator serviceLocator) {
+  void registerInternalDependencies() {
     _i
       ..registerLazySingleton<NavigationService>(() => NavigationServiceImpl())
-      ..registerLazySingleton<DialogService>(() => DialogServiceImpl())
-      ..registerSingleton<ServiceLocator>(serviceLocator);
+      ..registerLazySingleton<DialogService>(() => DialogServiceImpl());
   }
 
   @override
@@ -57,23 +60,24 @@ class ServiceRegistryImpl implements ServiceRegistry {
   @override
   void registerForNavigation<TView extends Widget, TViewModel extends ViewModelBase>({
     @required TView Function() view,
-    TViewModel Function() viewModel,
+    @required TViewModel Function() viewModel,
     String viewName,
   }) {
     assert(view != null);
+    assert(viewModel != null);
     _i.registerFactory<TView>(view, instanceName: viewName ?? TView.toString());
-
-    if (viewModel != null) {
-      _i..registerFactory<TViewModel>(viewModel);
-    }
+    _i..registerFactory<TViewModel>(viewModel);
   }
 
   @override
-  T resolve<T>([String name]) {
-    if (name?.isNotEmpty ?? false == true) {
-      return _i.get<Object>(instanceName: name) as T;
-    } else {
-      return _i.get<T>();
-    }
+  void registerDialog<TDialog extends DialogBase<DialogModelBase>, TDialogModel extends DialogModelBase>({
+    TDialog Function() dialog,
+    TDialogModel Function() dialogModel,
+    String dialogName,
+  }) {
+    assert(dialog != null);
+    assert(dialogModel != null);
+    _i.registerFactory<TDialog>(dialog, instanceName: dialogName ?? TDialog.toString());
+    _i..registerFactory<TDialogModel>(dialogModel);
   }
 }

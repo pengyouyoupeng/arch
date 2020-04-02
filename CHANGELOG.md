@@ -1,3 +1,7 @@
+#### 0.0.1+6
+- Changed library structure.
+- Update sample project, and code documentation.
+
 #### 0.0.1+5
 - Added `ChangeNotifierBuilder`.
 

@@ -12,5 +12,11 @@ dependencies:
   arch:
     path: ..
 
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  pedantic: ^1.8.0
+  mockito: ^4.1.1
+
 flutter:
   uses-material-design: true

@@ -1,6 +1,4 @@
-import 'package:arch/ioc.dart';
-import 'package:arch/mvvm.dart';
-import 'package:arch/services.dart';
+import 'package:arch/arch.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp(AppInitializer()));
@@ -50,6 +48,8 @@ class MyApp extends Application {
 }
 
 class HomeView extends StatefulWidget {
+  HomeView() : super(key: Key('HomeView'));
+
   @override
   _HomeViewState createState() => _HomeViewState();
 }
@@ -83,7 +83,7 @@ class _HomeViewState extends ViewStateBase<HomeView, HomeViewModel> {
 class HomeViewModel extends ViewModelBase {
   HomeViewModel(NavigationService navigationService) : super(navigationService: navigationService);
 
-  String title = 'Flutter Demo Home View';
+  String title = 'Home View';
 
   int _counter = 0;
   int get counter => _counter;
@@ -103,7 +103,7 @@ class HomeViewModel extends ViewModelBase {
 }
 
 class SecondView extends ViewBase<SecondViewModel> {
-  SecondView({Key key}) : super(key: key);
+  SecondView() : super(key: Key('SecondView'));
 
   @override
   Widget buildView(BuildContext context, SecondViewModel viewModel) {
