@@ -8,7 +8,7 @@ repository: https://www.github.com/cross-solutions/arch
 
 issue_tracker: https://www.github.com/cross-solutions/arch/issues
 
-version: 0.0.1+6
+version: 0.0.1+7
 
 environment:
   sdk: ">=2.6.0 <3.0.0"

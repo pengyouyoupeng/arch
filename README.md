@@ -1,5 +1,4 @@
 ### `arch`
-[![Generic badge](https://img.shields.io/badge/pub-0.0.1+5-<COLOR>.svg)](https://pub.dev/packages/arch)
 
 MVVM architecture components for Flutter.
 

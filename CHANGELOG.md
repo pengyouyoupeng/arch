@@ -1,3 +1,6 @@
+#### 0.0.1+7
+- Updated README.
+
 #### 0.0.1+6
 - Changed library structure.
 - Update sample project, and code documentation.
